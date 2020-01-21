@@ -3,8 +3,11 @@ package run;
 import chat.Chat;
 import chat.ChatClient;
 import chat.ChatListener;
+import database.UserDao;
+import database.UserDatabaseDao;
 import network.ClientReceiver;
 import network.Message.*;
+import network.Message.ServerClientLoggedIn;
 import network.server.Client;
 import network.server.Server;
 
@@ -15,10 +18,12 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
 
     private Server server;
     private Chat chat;
+    private UserDao userDao;
 
-    public ChatServerApp() {
+    public ChatServerApp() throws Exception {
+        userDao = new UserDatabaseDao();
         server = new Server(this, this);
-        chat = new Chat("Dope Server", this);
+        chat = new Chat("Chat Server", this, userDao);
         new Thread(server).start();
     }
 
@@ -30,14 +35,20 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
     }
 
     @Override
-    public void nameAccepted(ChatClient client) {
-        ServerNameAccepted message = new ServerNameAccepted();
+    public void registered(ChatClient client) {
+        ServerClientRegistrationCompleted message = new ServerClientRegistrationCompleted();
+        client.sendMessage(message);
+    }
+
+    @Override
+    public void logged(ChatClient client) {
+        ServerClientLoggedIn message = new ServerClientLoggedIn();
         client.sendMessage(message);
     }
 
     @Override
     public void newRoomClient(ChatClient client, ArrayList<ChatClient> clients) {
-        ServerNewRoomClient m = new ServerNewRoomClient(client.getName());
+        ServerNewRoomClient m = new ServerNewRoomClient(client.getUsername());
         for (ChatClient c : clients) {
             if (c.getId() != client.getId()) {
                 c.sendMessage(m);
@@ -47,7 +58,7 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
 
     @Override
     public void sendRoomMessage(ChatClient client, ArrayList<ChatClient> clients, String s) {
-        RoomMessage m = new RoomMessage(s, client.getName());
+        RoomMessage m = new RoomMessage(s, client.getUsername());
         for (ChatClient c : clients) {
             if (c.getId() != client.getId()) {
                 c.sendMessage(m);
@@ -70,10 +81,7 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
     public void receive(Message message) {
         switch (message.getMessageId()) {
 
-            case CLIENT_NEW_USER:
-                NewClientMessage newClientMessage = (NewClientMessage) message;
-                chat.setClientName(newClientMessage.getId(), newClientMessage.getName());
-                break;
+
             case CLIENT_CREATE_ROOM:
                 ClientCreateRoom clientCreateRoom = (ClientCreateRoom) message;
                 chat.createRoom(clientCreateRoom.getId(), clientCreateRoom.getName());
@@ -90,6 +98,14 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
                 ClientLeaveRoom clientLeaveRoom = (ClientLeaveRoom) message;
                 chat.leaveRoom(clientLeaveRoom.getId());
                 break;
+            case CLIENT_LOGIN:
+                ClientLogin clientLogin = (ClientLogin) message;
+                chat.login(clientLogin.getId(), clientLogin.getUsername(), clientLogin.getPassword());
+                break;
+            case CLIENT_REGISTER:
+                RegisterUser registerUser = (RegisterUser) message;
+                chat.registerUser(registerUser.getId(), registerUser.getUsername(), registerUser.getPassword());
+                break;
         }
     }
 
@@ -98,10 +114,14 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
     }
 
     public static void main(String[] args) {
-        ChatServerApp chatServerApp = new ChatServerApp();
-        Scanner in = new Scanner(System.in);
-        while(in.nextLine() != "exit");
-        chatServerApp.close();
+        try {
+            ChatServerApp chatServerApp = new ChatServerApp();
+            Scanner in = new Scanner(System.in);
+            while (in.nextLine() != "exit") ;
+            chatServerApp.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }

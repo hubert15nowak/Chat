@@ -6,6 +6,7 @@ import network.SocketInput;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.function.Predicate;
 
 public class Client {
 
@@ -37,4 +38,6 @@ public class Client {
             e.printStackTrace();
         }
     }
+
+
 }

@@ -11,12 +11,12 @@ public class ChatClient {
 
     public enum ClientStatus {
         CONNECTED,
-        SET_UP,
+        LOGGED_IN,
         IN_ROOM,
     }
     private Client client;
     private Room room;
-    private String name;
+    private String username;
     private int id;
     private ClientStatus status;
     public ChatClient(Client client) {
@@ -41,12 +41,12 @@ public class ChatClient {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public Room getRoom() {

@@ -5,7 +5,9 @@ import java.util.ArrayList;
 public interface ChatListener {
     void welcome(ChatClient client, String name);
 
-    void nameAccepted(ChatClient client);
+    void registered(ChatClient client);
+
+    void logged(ChatClient client);
 
     void newRoomClient(ChatClient client, ArrayList<ChatClient> clients);
 

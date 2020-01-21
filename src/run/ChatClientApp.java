@@ -42,16 +42,7 @@ public class ChatClientApp implements MessageReceiver {
                 case "connect":
                     connect();
                     break;
-                case "name":
-                    if(instruction.length == 2) {
-                        chatClient.setName(instruction[1]);
-                        NewClientMessage newClientMessage = new NewClientMessage(chatClient.getId(), chatClient.getName());
-                        chatClient.sendMessage(newClientMessage);
-                    }
-                    else {
-                        System.out.println("wrong statement");
-                    }
-                    break;
+
                 case "create":
                     if(instruction.length == 2) {
                         ClientCreateRoom clientCreateRoom = new ClientCreateRoom(chatClient.getId() , instruction[1]);
@@ -69,6 +60,29 @@ public class ChatClientApp implements MessageReceiver {
                     }
                     else {
                         System.out.println("wrong statement");
+                    }
+                case "leave":
+                    if(instruction.length == 1) {
+                        ClientLeaveRoom clientLeaveRoom = new ClientLeaveRoom(chatClient.getId());
+                        chatClient.sendMessage(clientLeaveRoom);
+                        break;
+                    }
+                    else {
+                        System.out.println("wrong statement");
+                    }
+                case "register":
+                    //TODO: create registration
+                    if(instruction.length == 3) {
+                        RegisterUser registerUser = new RegisterUser(chatClient.getId(), instruction[1], instruction[2]);
+                        chatClient.sendMessage(registerUser);
+                        break;
+                    }
+                case "login":
+                    //TODO: create login
+                    if(instruction.length == 3) {
+                        ClientLogin clientLogin = new ClientLogin(chatClient.getId(), instruction[1], instruction[2]);
+                        chatClient.sendMessage(clientLogin);
+                        break;
                     }
                 default:
                     ClientRoomMessage clientRoomMessage = new ClientRoomMessage(chatClient.getId(), s);
@@ -90,8 +104,11 @@ public class ChatClientApp implements MessageReceiver {
                 AcceptClient acceptClient = (AcceptClient) message;
                 chatClient.setId(acceptClient.getClientId());
                 break;
-            case SERVER_NAME_ACCEPTED:
-                System.out.println("Name accepted");
+            case SERVER_CLIENT_LOGGED_IN:
+                System.out.println("Hello");
+                break;
+            case SERVER_CLIENT_REGISTRATION_COMPLETED:
+                System.out.println("Registration completed, please login");
                 break;
             case SERVER_ALERT:
                 MessageAlert alert = (MessageAlert) message;

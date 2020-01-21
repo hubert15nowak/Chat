@@ -27,7 +27,7 @@ public class Room {
         clients.remove(client);
         chatListener.messageAlert(client, "You left " + name);
         client.setRoom(null);
-        client.setStatus(ChatClient.ClientStatus.SET_UP);
+        client.setStatus(ChatClient.ClientStatus.LOGGED_IN);
     }
 
     public int getNumberOfClients() {
