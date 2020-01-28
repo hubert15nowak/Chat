@@ -1,6 +1,5 @@
 package database;
 
-import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -9,9 +8,10 @@ import java.util.Random;
 public class PasswordUtils {
 
     static private Random random = new Random();
+    static private final int SALT_SIZE = 10;
 
     public static String genSalt() {
-        byte[] bytes = new byte[10];
+        byte[] bytes = new byte[SALT_SIZE];
         random.nextBytes(bytes);
         String salt = new String(bytes, StandardCharsets.UTF_8);
         return salt;

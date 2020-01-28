@@ -26,7 +26,7 @@ public class SocketInput implements Runnable{
                 receiver.receive(message);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+
         }
     }
 

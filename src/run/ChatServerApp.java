@@ -67,6 +67,12 @@ public class ChatServerApp implements ChatListener, MessageReceiver, ClientRecei
     }
 
     @Override
+    public void sendRoomList(ChatClient client, ArrayList<String> names) {
+        ServerRoomsList l = new ServerRoomsList(names);
+        client.sendMessage(l);
+    }
+
+    @Override
     public void messageAlert(ChatClient client, String alert) {
         MessageAlert m = new MessageAlert(alert);
         client.sendMessage(m);

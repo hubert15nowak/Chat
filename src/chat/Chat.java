@@ -1,6 +1,7 @@
 package chat;
 
 import database.UserDao;
+import network.server.Client;
 
 import java.util.ArrayList;
 
@@ -31,7 +32,7 @@ public class Chat {
                 case LOGGED_IN:
                     boolean newRoom = true;
                     for (Room room : rooms) {
-                        if (room.getName() == name) {
+                        if (room.getName().equals(name)) {
                             newRoom = false;
                             break;
                         }
@@ -43,6 +44,7 @@ public class Chat {
                     } else {
                         chatListener.messageAlert(client, "Room name used");
                     }
+                    sendRooms();
                     break;
                 case IN_ROOM:
                     chatListener.messageAlert(client, "You can't create room while you are in room");
@@ -50,6 +52,18 @@ public class Chat {
                 case CONNECTED:
                     chatListener.messageAlert(client, "Enter name");
                     break;
+            }
+        }
+    }
+
+    private void sendRooms() {
+        ArrayList<String> names = new ArrayList<>();
+        for (Room r : rooms) {
+            names.add(r.getName());
+        }
+        for (ChatClient c: clients) {
+            if(c.getStatus() != ChatClient.ClientStatus.CONNECTED) {
+                chatListener.sendRoomList(c, names);
             }
         }
     }
@@ -108,7 +122,6 @@ public class Chat {
             }
             if(!used) {
                 userDao.saveUser(username, password);
-                client.setUsername(username);
                 chatListener.registered(client);
             }
             else {
@@ -131,6 +144,7 @@ public class Chat {
                 client.setUsername(username);
                 client.setStatus(ChatClient.ClientStatus.LOGGED_IN);
                 chatListener.logged(client);
+                sendRooms();
             }
             else {
                 chatListener.messageAlert(client, "Wrong username or password");

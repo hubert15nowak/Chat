@@ -12,6 +12,7 @@ public abstract class Message implements Serializable {
         SERVER_ALERT,
         SERVER_NEW_ROOM_CLIENT,
         SERVER_CLIENT_LOGGED_IN,
+        SERVER_ROOM_LIST,
         CLIENT_ROOM_MESSAGE,
         CLIENT_LOGIN,
         CLIENT_CREATE_ROOM,

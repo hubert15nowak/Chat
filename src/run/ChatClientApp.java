@@ -1,9 +1,12 @@
 package run;
 
 import chat.ChatClient;
+import gui.MainPanel;
 import network.Message.*;
 import network.server.Client;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -12,9 +15,23 @@ public class ChatClientApp implements MessageReceiver {
 
     private ChatClient chatClient;
     private Client client;
+    private MainPanel mainPanel;
 
     public ChatClientApp() {
+
         chatClient = new ChatClient(null);
+        createGui();
+        connect();
+    }
+
+    private void createGui() {
+        mainPanel = new MainPanel(this);
+        JFrame frame = new JFrame("Chat");
+        frame.setMinimumSize(new Dimension(400,300));
+        frame.add(mainPanel);
+        frame.setVisible(true);
+        frame.pack();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
     public boolean connect() {
@@ -34,6 +51,38 @@ public class ChatClientApp implements MessageReceiver {
             chatClient.getClient().close();
         }
     }
+
+    public void login(String username, String password) {
+        ClientLogin clientLogin = new ClientLogin(chatClient.getId(), username, password);
+        chatClient.sendMessage(clientLogin);
+    }
+
+    public void register(String username, String password) {
+        RegisterUser registerUser = new RegisterUser(chatClient.getId(), username, password);
+        chatClient.sendMessage(registerUser);
+    }
+
+    public void create(String name) {
+        ClientCreateRoom clientCreateRoom = new ClientCreateRoom(chatClient.getId() , name);
+        chatClient.sendMessage(clientCreateRoom);
+    }
+
+    public void enter(String name) {
+        ClientEnterRoom clientEnterRoom = new ClientEnterRoom(chatClient.getId(), name);
+        chatClient.sendMessage(clientEnterRoom);
+    }
+
+    public void leave() {
+        ClientLeaveRoom clientLeaveRoom = new ClientLeaveRoom(chatClient.getId());
+        chatClient.sendMessage(clientLeaveRoom);
+    }
+
+    public void sendMessage(String message) {
+        ClientRoomMessage clientRoomMessage = new ClientRoomMessage(chatClient.getId(), message);
+        chatClient.sendMessage(clientRoomMessage);
+    }
+
+
 
     public void instruction(String s) {
         String []instruction = s.split(" ");
@@ -71,14 +120,12 @@ public class ChatClientApp implements MessageReceiver {
                         System.out.println("wrong statement");
                     }
                 case "register":
-                    //TODO: create registration
                     if(instruction.length == 3) {
                         RegisterUser registerUser = new RegisterUser(chatClient.getId(), instruction[1], instruction[2]);
                         chatClient.sendMessage(registerUser);
                         break;
                     }
                 case "login":
-                    //TODO: create login
                     if(instruction.length == 3) {
                         ClientLogin clientLogin = new ClientLogin(chatClient.getId(), instruction[1], instruction[2]);
                         chatClient.sendMessage(clientLogin);
@@ -98,29 +145,37 @@ public class ChatClientApp implements MessageReceiver {
             case SERVER_WELCOME_USER:
                 WelcomeClient welcomeClient = (WelcomeClient) message;
                 chatClient.setId(welcomeClient.getClientId());
-                System.out.println("Welcome to " + welcomeClient.getName());
+                mainPanel.printMessage("Welcome to " + welcomeClient.getName());
                 break;
             case SERVER_ACCEPT_USER:
                 AcceptClient acceptClient = (AcceptClient) message;
                 chatClient.setId(acceptClient.getClientId());
                 break;
             case SERVER_CLIENT_LOGGED_IN:
+                mainPanel.switchToChat();
                 System.out.println("Hello");
                 break;
             case SERVER_CLIENT_REGISTRATION_COMPLETED:
-                System.out.println("Registration completed, please login");
+                mainPanel.switchToLogin();
+                mainPanel.printMessage("Registration completed, please login");
                 break;
             case SERVER_ALERT:
                 MessageAlert alert = (MessageAlert) message;
-                System.out.println("Server: " + alert.getAlert());
+                mainPanel.printMessage("Server: " + alert.getAlert());
                 break;
             case SERVER_NEW_ROOM_CLIENT:
                 ServerNewRoomClient serverNewRoomClient = (ServerNewRoomClient) message;
+                mainPanel.newRoomMessage(serverNewRoomClient.getName() + " joined room");
                 System.out.println(serverNewRoomClient.getName() + " joined room");
                 break;
             case SERVER_ROOM_MESSAGE:
                 RoomMessage roomMessage = (RoomMessage) message;
+                mainPanel.newRoomMessage(roomMessage.getName() + ": " + roomMessage.getS());
                 System.out.println(roomMessage.getName() + ": " + roomMessage.getS());
+                break;
+            case SERVER_ROOM_LIST:
+                ServerRoomsList list = (ServerRoomsList) message;
+                mainPanel.roomList(list.getNames());
                 break;
         }
     }

@@ -13,5 +13,7 @@ public interface ChatListener {
 
     void sendRoomMessage(ChatClient client, ArrayList<ChatClient> clients, String s);
 
+    void sendRoomList(ChatClient client, ArrayList<String> names);
+
     void messageAlert(ChatClient client, String alert);
 }
